@@ -27,6 +27,25 @@ int main(int argc, char * argv[]) {
         */
         sf::Color bg_color(r,g,b);
 
+        //logic
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+            myarrow.move(0, -1);
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+            myarrow.move(-1, 0);
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+            myarrow.move(0, 1);
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+            myarrow.move(1, 0);
+        }
+
+
+        //render
         window.clear(bg_color);
         window.draw(myarrow);
         window.display();
