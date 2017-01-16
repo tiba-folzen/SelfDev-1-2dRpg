@@ -14,6 +14,8 @@ set(LIBS
     "sfml-network"
 )
 
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17")
+
 add_executable(${CMAKE_PROJECT_NAME} ${SRC})
 target_link_libraries(${CMAKE_PROJECT_NAME} ${LIBS})
 
