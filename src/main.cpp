@@ -1,6 +1,9 @@
 #include <SFML/Graphics.hpp>
 #include <random>
 #include <time.h>
+#include <rapidjson/document.h>
+#include <fstream>
+#include <iostream>
 
 
 sf::Vector2f get_sprite_size(sf::Sprite &s1) {
@@ -29,7 +32,27 @@ bool check_collision(sf::Sprite &s1, sf::Sprite &s2) {
 }
 
 int main(int argc, char * argv[]) {
+    //init random
     srand(std::time(0));
+
+    //init map
+    rapidjson::Document config;
+    std::string cfg_string;
+    std::ifstream cfg_file("asset/map/mapuka.json");
+
+    std::string buff;
+    while (cfg_file >> buff) {
+        cfg_string += buff;
+    }
+
+    std::cout << cfg_string << std::endl;
+
+    config.Parse(cfg_string.c_str());
+    //std::cout << config.Capacity();
+
+    for (int i = 0; i < config.Capacity(); i++) {
+        std::cout << config[i]["type"].GetString() << std::endl;
+    }
 
     //create window
     sf::RenderWindow window(sf::VideoMode(640, 480), "Brand cool title :D:D:D");
