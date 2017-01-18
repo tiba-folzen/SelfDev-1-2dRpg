@@ -148,8 +148,8 @@ int main(int argc, char * argv[]) {
     sf::Texture test_arrow_texture, wall_texture;
 
     //init textures
-    test_arrow_texture.loadFromFile("asset/img/test_arrow.png");
-    wall_texture.loadFromFile("asset/img/wall.png");
+    test_arrow_texture.loadFromFile("asset/img/player.png");
+    wall_texture.loadFromFile("asset/img/wall2.png");
 
     for (int i = 0; i < config.Capacity(); i++) {
         std::cout << config[i]["type"].GetString() << std::endl;

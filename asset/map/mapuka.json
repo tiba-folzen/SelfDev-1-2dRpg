@@ -1,6 +1,6 @@
 [
-	{"type": "wall", "pos": {"x": 50, "y": 50}}, 
-	{"type": "wall", "pos": {"x": 125, "y": 50}}, 
-	{"type": "wall", "pos": {"x": 150, "y": 0}},  
-	{"type": "player", "pos": {"x": 0, "y": 44}}
+    {"type": "player", "pos": {"x": 44, "y": 44}},
+	{"type": "wall", "pos": {"x": 500, "y": 300}}, 
+	{"type": "wall", "pos": {"x": 400, "y": 20}}, 
+	{"type": "wall", "pos": {"x": 150, "y": 300}}
 ]
