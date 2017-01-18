@@ -5,7 +5,6 @@
 #include <fstream>
 #include <iostream>
 
-
 sf::Vector2f get_sprite_size(sf::Sprite &s1) {
     sf::Vector2f result;
     sf::IntRect texture_size = s1.getTextureRect();
@@ -31,9 +30,102 @@ bool check_collision(sf::Sprite &s1, sf::Sprite &s2) {
     );
 }
 
+class GameEntity {
+public:
+    bool exist;
+    bool have_keyboard;
+    bool drawable;
+    bool have_logic;
+
+    virtual void draw(sf::RenderWindow & w) {
+        std::cout << "base\n";
+    }
+    virtual void logic() {}
+    virtual void logic(double timediff) {}
+
+    GameEntity() {
+        this->exist = false;
+        this->drawable = false;
+        this->have_keyboard = false;
+        this->have_logic = false;
+    }
+};
+
+//init mapdata
+GameEntity * ents[100];
+
+class Wall : public GameEntity {
+public:
+    sf::Sprite sprite;
+
+    void draw(sf::RenderWindow & w) {
+        w.draw(this->sprite);
+    }
+
+    Wall() {
+        this->drawable = true;
+    }
+};
+
+class Player : public GameEntity {
+public:
+    sf::Sprite sprite;
+    int direction;
+
+    void draw(sf::RenderWindow & w) {
+        w.draw(this->sprite);
+    }
+
+    Player() {
+        this->drawable = true;
+        this->have_keyboard = true;
+        this->have_logic = true;
+        this->direction = 0;
+    }
+
+    void logic() {
+        int xoffset, yoffset;
+        xoffset = 0;
+        yoffset = 0;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+            yoffset--;
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+            xoffset--;
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+            yoffset++;
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+            xoffset++;
+        }
+        this->sprite.move(xoffset, yoffset);
+
+        bool collide = false;
+        for (int i = 0; i < 100; i++) {
+            if ((ents[i] != NULL) & (ents[i] != this)) {
+                if (ents[i]->drawable) {
+                    if (check_collision(this->sprite, ((Wall *)ents[i])->sprite)) {
+                        collide = true;
+                    }
+                }
+            }
+        }
+        if (collide) {
+            this->sprite.move(-xoffset, -yoffset);
+        }
+    }
+};
+
+
 int main(int argc, char * argv[]) {
     //init random
     srand(std::time(0));
+
+    for (int i = 0; i < 100; i++) ents[i] = NULL;
 
     //init map
     rapidjson::Document config;
@@ -48,11 +140,6 @@ int main(int argc, char * argv[]) {
     std::cout << cfg_string << std::endl;
 
     config.Parse(cfg_string.c_str());
-    //std::cout << config.Capacity();
-
-    for (int i = 0; i < config.Capacity(); i++) {
-        std::cout << config[i]["type"].GetString() << std::endl;
-    }
 
     //create window
     sf::RenderWindow window(sf::VideoMode(640, 480), "Brand cool title :D:D:D");
@@ -64,21 +151,28 @@ int main(int argc, char * argv[]) {
     test_arrow_texture.loadFromFile("asset/img/test_arrow.png");
     wall_texture.loadFromFile("asset/img/wall.png");
 
-    //create sprites
-    sf::Sprite myarrow(test_arrow_texture);
-    myarrow.setOrigin(0,0);
+    for (int i = 0; i < config.Capacity(); i++) {
+        std::cout << config[i]["type"].GetString() << std::endl;
 
-    int wall_count = 5;
-    sf::Sprite mywalls[wall_count];
+        std::string type = config[i]["type"].GetString();
 
-    for (int i = 0; i < wall_count; i++) {
-        mywalls[i].setTexture(wall_texture);
-        mywalls[i].setOrigin(0,0);
-
-        int x,y;
-        x = std::rand() % 600;
-        y = std::rand() % 400;
-        mywalls[i].setPosition(x, y);
+        if (type == "wall") {
+            double x = config[i]["pos"]["x"].GetDouble();
+            double y = config[i]["pos"]["y"].GetDouble();
+            Wall * w = new Wall();
+            w->sprite.setPosition(x,y);
+            w->sprite.setTexture(wall_texture);
+            ents[i] = w;
+        } else if (type == "player") {
+            double x = config[i]["pos"]["x"].GetDouble();
+            double y = config[i]["pos"]["y"].GetDouble();
+            Player * p = new Player();
+            p->sprite.setTexture(test_arrow_texture);
+            p->sprite.setPosition(x, y);
+            ents[i] = p;
+        } else {
+            std::cout << "type unknown\n";
+        }
     }
 
     while (window.isOpen()) {
@@ -89,52 +183,24 @@ int main(int argc, char * argv[]) {
             }
         }
 
-        int r,g,b;
-        r = 255; g = 255; b = 255;
-        /*
-        r = std::rand() % 256;
-        g = std::rand() % 256;
-        b = std::rand() % 256;
-        */
-        sf::Color bg_color(r,g,b);
-
-        //logic
-        int myarrow_xoffset, myarrow_yoffset;
-        myarrow_xoffset = 0;
-        myarrow_yoffset = 0;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-            myarrow_yoffset--;
-        }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-            myarrow_xoffset--;
-        }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-            myarrow_yoffset++;
-        }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-            myarrow_xoffset++;
-        }
-        myarrow.move(myarrow_xoffset, myarrow_yoffset);
-
-        bool collide = false;
-        for (int i = 0; i < wall_count; i++) {
-            if (check_collision(myarrow, mywalls[i])) {
-                collide = true;
+        for (int i = 0; i < 100; i++) {
+            if (ents[i] != NULL) {
+                if (ents[i]->have_logic) {
+                    ents[i]->logic();
+                }
             }
-        }
-        if (collide) {
-            myarrow.move(-myarrow_xoffset, -myarrow_yoffset);
         }
 
         //render
-        window.clear(bg_color);
-        for (int i = 0; i < wall_count; i++) {
-            window.draw(mywalls[i]);
+        window.clear(sf::Color::White);
+        for (int i = 0; i < 100; i++) {
+            if (ents[i] != NULL) {
+                if (ents[i]->drawable) {
+                    ents[i]->draw(window);
+                }
+            }
         }
-        window.draw(myarrow);
+
         window.display();
     }
     return 0;
