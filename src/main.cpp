@@ -4,6 +4,14 @@
 #include <rapidjson/document.h>
 #include <fstream>
 #include <iostream>
+#include <chrono>
+
+__int64_t my_now() {
+    std::chrono::milliseconds now_useless_type;
+    __int64_t now = now_useless_type.count();
+
+    return now;
+}
 
 sf::Vector2f get_sprite_size(sf::Sprite &s1) {
     sf::Vector2f result;
@@ -122,6 +130,12 @@ public:
 
 
 int main(int argc, char * argv[]) {
+
+    std::cout << my_now() << "\n";
+
+    return 0;
+
+
     //init random
     srand(std::time(0));
 
